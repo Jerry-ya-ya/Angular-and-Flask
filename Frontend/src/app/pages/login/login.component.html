@@ -1,0 +1,19 @@
+<h2>
+    Login
+</h2>
+<div>
+    <div>
+        <input [(ngModel)]="username" placeholder="Username">
+    </div>
+    <div>
+        <input [(ngModel)]="password" type="password" placeholder="Password">
+    </div>
+</div>
+
+<button (click)="login()">
+    Login
+</button>
+
+<p *ngIf="error">
+    {{ error }}
+</p>

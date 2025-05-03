@@ -1,0 +1,10 @@
+<div>
+    <h2>即時科技新聞</h2>
+    <h2>Hacker News</h2>
+    <button (click)="fetchNews()">📥 抓取最新新聞</button>
+    <ul>
+        <li *ngFor="let item of news">
+            <a [href]="item.url" target="_blank">{{ item.title }}</a>
+        </li>
+    </ul>
+</div>

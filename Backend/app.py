@@ -1,0 +1,71 @@
+# pip install virtualenv
+# python3 -m virtualenv myenv
+# .\myenv\Scripts\activate
+
+# To fix after creating virtual environment in Windows:
+# Ctrl + Shift + P
+# Python: Select Interpreter
+# Enter interpreter path
+# .\myenv\Scripts\python.exe
+
+from flask import Flask
+from flask_cors import CORS
+from datetime import timedelta
+from flask_jwt_extended import JWTManager
+from models import db
+
+# 匯入 blueprint
+from routes.auth import auth_bp
+from routes.todo import todo_bp
+from routes.me import me_bp
+from routes.changepassword import changepassword_bp
+from routes.avatar import avatar_bp
+from routes.square import square_bp
+from routes.crawler import crawler_bp
+
+def create_app():
+    app = Flask(__name__)
+
+    # 設定上傳檔案的路徑
+    UPLOAD_FOLDER = 'static/uploads/avatar'
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    
+    # 設定上傳檔案的大小限制 (5MB)
+    app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB
+    
+    # 設定資料庫連線
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # JWT 設定
+    app.config['JWT_SECRET_KEY'] = 'super-secret-key'
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=2)
+
+    # 初始化資料庫
+    db.init_app(app)
+
+    # 設定資料庫連線
+    with app.app_context():
+        db.create_all()
+
+    # 初始化 JWT
+    JWTManager(app)
+
+    # 設定 CORS
+    CORS(app)
+    
+    # 註冊藍圖
+    app.register_blueprint(auth_bp, url_prefix='/api')
+    app.register_blueprint(todo_bp, url_prefix='/api')
+    app.register_blueprint(me_bp, url_prefix='/api')
+    app.register_blueprint(changepassword_bp, url_prefix='/api')
+    app.register_blueprint(avatar_bp, url_prefix='/api')
+    app.register_blueprint(square_bp, url_prefix='/api')
+    app.register_blueprint(crawler_bp, url_prefix='/api')
+
+    return app
+
+if __name__ == '__main__':
+    app = create_app()
+    print(f" Flask app 類型：{type(app)}")
+    app.run(debug=True)
