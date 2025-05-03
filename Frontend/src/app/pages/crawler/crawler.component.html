@@ -4,7 +4,10 @@
     <button (click)="fetchNews()">📥 抓取最新新聞</button>
     <ul>
         <li *ngFor="let item of news">
+            <small>📅 {{ item.created_at | date:'medium' }}</small>
+            <br>
             <a [href]="item.url" target="_blank">{{ item.title }}</a>
+            <hr>
         </li>
     </ul>
 </div>
