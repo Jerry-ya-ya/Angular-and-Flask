@@ -48,6 +48,7 @@ node_modules
 /Backend/.DS_Store
 /Backend/Thumbs.db
 /Backend/static/uploads/
+Backend/instance/db.sqlite3
 
 # 通用
 *.log

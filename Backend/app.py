@@ -23,6 +23,9 @@ from routes.avatar import avatar_bp
 from routes.square import square_bp
 from routes.crawler import crawler_bp
 
+from routes.crawler.schedule import start_scheduler
+from routes.crawler.logic import init_schedule_state
+
 def create_app():
     app = Flask(__name__)
 
@@ -47,7 +50,8 @@ def create_app():
     # 設定資料庫連線
     with app.app_context():
         db.create_all()
-
+        init_schedule_state()
+    
     # 初始化 JWT
     JWTManager(app)
 
@@ -63,9 +67,10 @@ def create_app():
     app.register_blueprint(square_bp, url_prefix='/api')
     app.register_blueprint(crawler_bp, url_prefix='/api')
 
+    start_scheduler(app) # 啟動排程器
+    
     return app
 
 if __name__ == '__main__':
-    app = create_app()
-    print(f" Flask app 類型：{type(app)}")
-    app.run(debug=True)
+    app = create_app() # 建立 Flask 應用程式
+    app.run(debug=True) # 啟動 Flask 應用程式

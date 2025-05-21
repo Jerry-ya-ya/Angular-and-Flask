@@ -1,22 +1,22 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint
 import requests
 from bs4 import BeautifulSoup
-from models import db, News
+from models import News, db
+from models import ScheduleState
 
-crawler_bp = Blueprint('crawler_bp', __name__)
+logic_bp = Blueprint('logic_bp', __name__)
 
-@crawler_bp.route('/crawler/fetch', methods=['POST'])
 def fetch_and_store_news():
     url = 'https://news.ycombinator.com/'
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     added = 0
-    for item in soup.select('.athing')[:10]:
+
+    for item in soup.select('.athing')[:30]:
         title_tag = item.select_one('.titleline a')
         if title_tag:
             title = title_tag.text
             link = title_tag['href']
-            
             # 檢查是否已存在（避免重複）
             if not News.query.filter_by(title=title, url=link).first():
                 news = News(title=title, url=link)
@@ -24,16 +24,11 @@ def fetch_and_store_news():
                 added += 1
 
     db.session.commit()
-    return jsonify({'message': f'{added} new items added.'})
+    return added
 
-@crawler_bp.route('/crawler/news', methods=['GET'])
-def get_saved_news():
-    news = News.query.order_by(News.created_at.desc()).limit(10).all()
-    return jsonify([
-        {
-            'title': n.title,
-            'url': n.url,
-            'created_at': n.created_at.isoformat()
-        }
-        for n in news
-    ])
+def init_schedule_state():
+    if not ScheduleState.query.filter_by(job_name="news_crawler").first():
+        state = ScheduleState(job_name="news_crawler")
+        db.session.add(state)
+        db.session.commit()
+        print("✅ ScheduleState 已初始化")
