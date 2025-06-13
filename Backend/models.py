@@ -31,3 +31,9 @@ class News(db.Model):
     title = db.Column(db.String(255), nullable=False)
     url = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ScheduleState(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    job_name = db.Column(db.String(50), unique=True, nullable=False)
+    last_run = db.Column(db.DateTime)
+    next_run = db.Column(db.DateTime)

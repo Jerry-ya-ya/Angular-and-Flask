@@ -34,11 +34,12 @@ Thumbs.db
 node_modules
 
 # Backend Flask
-/Backend/__pycache__/
+**/__pycache__/
+/Backend/routes/__pycache__/
 /Backend/*.py[cod]
 /Backend/*.pyo
 /Backend/*.pyd
-/Backend/venv/
+/Backend/myenv/
 /Backend/.env
 /Backend/.env.*
 /Backend/*.sqlite3
@@ -48,6 +49,7 @@ node_modules
 /Backend/.DS_Store
 /Backend/Thumbs.db
 /Backend/static/uploads/
+Backend/instance/db.sqlite3
 
 # 通用
 *.log

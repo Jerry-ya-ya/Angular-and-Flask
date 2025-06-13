@@ -1,8 +1,6 @@
-import { Component } from '@angular/core';
-
-import { OnInit } from '@angular/core';
-
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-crawler',
@@ -10,22 +8,61 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './crawler.component.html',
   styleUrl: './crawler.component.css'
 })
-export class CrawlerComponent implements OnInit {
+export class CrawlerComponent implements OnInit, OnDestroy {
   news: any[] = [];
+  scheduleInfo: any = null;
+  private updateSubscription: Subscription;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // 每30秒更新一次時間資訊
+    this.updateSubscription = interval(30000).subscribe(() => {
+      this.updateScheduleInfo();
+    });
+  }
 
   ngOnInit(): void {
-    this.http.get<any[]>('http://localhost:5000/api/crawler/news').subscribe({
-      next: data => this.news = data,
-      error: () => alert('爬蟲資料獲取失敗')
+    this.loadNews();
+    this.updateScheduleInfo();
+  }
+
+  ngOnDestroy(): void {
+    if (this.updateSubscription) {
+      this.updateSubscription.unsubscribe();
+    }
+  }
+
+  loadNews() {
+    this.http.get<any>('http://localhost:5000/api/crawler/news').subscribe({
+      next: (data) => {
+        this.news = data;
+      },
+      error: (error) => {
+        console.error('Error loading news:', error);
+      }
+    });
+  }
+
+  updateScheduleInfo() {
+    this.http.get<any>('http://localhost:5000/api/crawler/info').subscribe({
+      next: (info) => {
+        this.scheduleInfo = info;
+      },
+      error: (error) => {
+        console.error('Error updating schedule info:', error);
+      }
     });
   }
 
   fetchNews() {
     this.http.post('http://localhost:5000/api/crawler/fetch', {}).subscribe({
-      next: () => this.ngOnInit(),  // 抓完再更新列表
-      error: () => alert('爬蟲失敗')
+      next: () => {
+        this.loadNews();
+        this.updateScheduleInfo();
+      },
+      error: (error) => {
+        console.error('Error fetching news:', error);
+        alert('爬蟲失敗');
+      }
     });
   }
 }

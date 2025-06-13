@@ -13,6 +13,8 @@ from flask_cors import CORS
 from datetime import timedelta
 from flask_jwt_extended import JWTManager
 from models import db
+from dotenv import load_dotenv
+import os
 
 # 匯入 blueprint
 from routes.auth import auth_bp
@@ -22,6 +24,12 @@ from routes.changepassword import changepassword_bp
 from routes.avatar import avatar_bp
 from routes.square import square_bp
 from routes.crawler import crawler_bp
+
+from routes.crawler.schedule import start_scheduler
+from routes.crawler.logic import init_schedule_state
+
+# 載入 .env 環境變數
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)
@@ -33,8 +41,18 @@ def create_app():
     # 設定上傳檔案的大小限制 (5MB)
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB
     
+    # 設定資料庫連線（使用 SQL Server）
+    server = os.getenv("DB_SERVER")
+    port = os.getenv("DB_PORT", "1433")  # 預設 SQL Server 埠號
+    database = os.getenv("DB_NAME")
+    username = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+
     # 設定資料庫連線
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+    app.config['SQLALCHEMY_DATABASE_URI'] = (
+        f"mssql+pyodbc://{username}:{password}@{server},{port}/{database}"
+        "?driver=ODBC+Driver+17+for+SQL+Server"
+    )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # JWT 設定
@@ -43,10 +61,9 @@ def create_app():
 
     # 初始化資料庫
     db.init_app(app)
-
-    # 設定資料庫連線
     with app.app_context():
         db.create_all()
+        init_schedule_state()
 
     # 初始化 JWT
     JWTManager(app)
@@ -63,9 +80,10 @@ def create_app():
     app.register_blueprint(square_bp, url_prefix='/api')
     app.register_blueprint(crawler_bp, url_prefix='/api')
 
+    start_scheduler(app) # 啟動排程器
+    
     return app
 
 if __name__ == '__main__':
-    app = create_app()
-    print(f" Flask app 類型：{type(app)}")
-    app.run(debug=True)
+    app = create_app() # 建立 Flask 應用程式
+    app.run(debug=True) # 啟動 Flask 應用程式
