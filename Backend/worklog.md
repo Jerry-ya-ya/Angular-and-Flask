@@ -203,3 +203,6 @@ B:FandB.Flask
                 把爬蟲任務與網站來源分開設定
                 多個不同爬蟲
                 發送通知或 Log 檔
+
+## 2025/05/24 ##
+- [1] 更換SQLite 為 Microsoft SQL Server
