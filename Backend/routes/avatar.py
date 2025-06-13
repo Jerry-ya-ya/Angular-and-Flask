@@ -29,10 +29,15 @@ def upload_avatar():
         return jsonify({'error': 'No selected file'}), 400
 
     if file and allowed_file(file.filename):
+        # 確保上傳目錄存在
+        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatar')
+        os.makedirs(upload_folder, exist_ok=True)
+        
         filename = secure_filename(f"{user.username}_{file.filename}")
-        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        filepath = os.path.join(upload_folder, filename)
         file.save(filepath)
 
+        # 使用正斜線作為 URL 路徑
         user.avatar_url = f'/static/uploads/avatar/{filename}'
         db.session.commit()
 

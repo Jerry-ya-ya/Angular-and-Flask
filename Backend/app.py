@@ -69,7 +69,7 @@ def create_app():
     JWTManager(app)
 
     # 設定 CORS
-    CORS(app)
+    CORS(app) # 不建議上線使用，會開放所有來源
     
     # 註冊藍圖
     app.register_blueprint(auth_bp, url_prefix='/api')
